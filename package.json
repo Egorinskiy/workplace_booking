@@ -1,0 +1,21 @@
+{
+  "name": "workplace-booking",
+  "version": "1.0.0",
+  "description": "Бронирование рабочих мест в опенспейсе",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.5.4",
+    "pg": "^8.8.0",
+    "node-cron": "^3.0.2",
+    "basic-auth": "^2.0.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

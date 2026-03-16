@@ -1,0 +1,134 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+h1, h2 {
+    margin: 0;
+}
+
+.floorplan {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+}
+
+.block {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 250px;
+}
+
+.block h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.seats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.seat {
+    background-color: #e0e0e0;
+    border: 2px solid #999;
+    border-radius: 8px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+    position: relative;
+}
+
+.seat.occupied {
+    background-color: #ffb6b6;
+    border-color: #d32f2f;
+    cursor: not-allowed;
+}
+
+.seat.my-seat {
+    border-color: #4caf50;
+    border-width: 4px;
+}
+
+.seat .user-name {
+    font-size: 0.8em;
+    color: #555;
+    margin-top: 5px;
+    font-weight: normal;
+}
+
+button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#release-my-seat {
+    background-color: #f44336;
+}
+
+#release-my-seat:hover {
+    background-color: #da190b;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #4caf50;
+    color: white;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+a {
+    color: #4caf50;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
