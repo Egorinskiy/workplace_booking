@@ -27,15 +27,10 @@
             <tbody></tbody>
         </table>
     </main>
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Простой скрипт для админки (можно вынести в отдельный файл, но для простоты здесь)
-        const socket = io();
-        socket.on('seats-updated', () => {
-            loadOccupancy();
-        });
-
-        async function loadOccupancy() {
+        let adminPollTimer;
+    async function loadOccupancy() {
+        try {
             const response = await fetch('/api/admin/occupancy');
             const data = await response.json();
             const tbody = document.querySelector('#occupancy-table tbody');
@@ -51,21 +46,29 @@
                 `;
                 tbody.appendChild(row);
             });
+        } catch (err) {
+            console.error('Ошибка загрузки occupancy:', err);
         }
+    }
 
-        async function deleteRecord(id) {
-            if (!confirm('Удалить запись?')) return;
-            await fetch(`/api/admin/occupancy/${id}`, { method: 'DELETE' });
-            loadOccupancy();
-        }
+    async function deleteRecord(id) {
+        if (!confirm('Удалить запись?')) return;
+        await fetch(`/api/admin/occupancy/${id}`, { method: 'DELETE' });
+        loadOccupancy(); // обновить после удаления
+    }
 
-        document.getElementById('clear-today').addEventListener('click', async () => {
-            if (!confirm('Освободить все места сегодня?')) return;
-            await fetch('/api/admin/clear-today', { method: 'POST' });
-            loadOccupancy();
-        });
-
+    document.getElementById('clear-today').addEventListener('click', async () => {
+        if (!confirm('Освободить все места сегодня?')) return;
+        await fetch('/api/admin/clear-today', { method: 'POST' });
         loadOccupancy();
+    });
+
+    // Запускаем polling каждые 5 секунд для админки
+    adminPollTimer = setInterval(loadOccupancy, 5000);
+    window.addEventListener('beforeunload', () => clearInterval(adminPollTimer));
+
+    // Первая загрузка
+    loadOccupancy();
     </script>
 </body>
 </html>
