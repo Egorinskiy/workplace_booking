@@ -120,7 +120,7 @@ async function onSeatClick(seatId, occupied) {
 
     // Если имя неизвестно, запросим
     if (!myName) {
-        const name = prompt('Введите ваше имя (ФИО):');
+        const name = prompt('Введите ваше имя и первую букву фамилии(Формат - "Имя Ф."):');
         if (!name) return;
         myName = name;
         localStorage.setItem('userName', myName);
