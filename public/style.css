@@ -72,10 +72,10 @@ body {
     box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
-/* Планировка — теперь используем Grid */
+/* Планировка — Grid, стекляшка сверху */
 .floorplan {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* две колонки для левого и правого блоков */
+    grid-template-columns: 1fr 1fr;
     gap: 30px;
     justify-content: center;
     padding: 30px 20px;
@@ -83,25 +83,23 @@ body {
     margin: 0 auto;
 }
 
-/* Стекляшка занимает всю ширину и располагается первой */
+/* Стекляшка занимает всю ширину, первая строка */
 .glass-block {
-    grid-column: span 2;   /* занимает обе колонки */
-    grid-row: 1;           /* первая строка */
+    grid-column: span 2;
+    grid-row: 1;
 }
 
-/* Левый блок — первая колонка, вторая строка */
 .left-block {
     grid-column: 1;
     grid-row: 2;
 }
 
-/* Правый блок — вторая колонка, вторая строка */
 .right-block {
     grid-column: 2;
     grid-row: 2;
 }
 
-/* Стили самих блоков */
+/* Оформление блоков */
 .block {
     background: white;
     padding: 20px;
@@ -120,44 +118,31 @@ body {
     padding-bottom: 10px;
 }
 
+/* Сетка столов — 2 колонки */
 .seats-grid {
     display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
-    grid-template-columns: repeat(2, minmax(80px, auto));
-    justify-items: center;
 }
 
-.seat-content {
-    transform: rotate(-90deg);
-    white-space: nowrap;
-    display: inline-block;
-    text-align: center;
-    line-height: 1.2;
-}
-
+/* Базовый стиль стола (прямоугольник) */
 .seat {
     background: #ecf0f1;
     border: 2px solid #bdc3c7;
     border-radius: 12px;
+    padding: 20px 5px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
     font-weight: bold;
     color: #2c3e50;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 80px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;                /* убираем старые padding */
-    margin: 0 auto;
     position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    /* Для позиционирования повёрнутого текста */
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    min-height: 100px;
 }
 
 .seat:hover:not(.occupied) {
@@ -174,7 +159,6 @@ body {
     opacity: 0.8;
 }
 
-/* Стиль для места, занятого текущим пользователем */
 .seat.my-seat {
     background: #d4edda;
     border-color: #28a745;
@@ -183,10 +167,20 @@ body {
     cursor: pointer;
 }
 
+/* Контейнер для повёрнутого текста */
+.seat-text {
+    transform: rotate(-90deg);
+    transform-origin: top right;
+    white-space: nowrap;
+    text-align: left;
+    font-size: 0.9rem;
+    margin-right: -10px; /* смещение, чтобы текст был ближе к правому краю */
+    margin-top: 5px;
+}
+
 .seat .user-name {
     font-size: 0.75rem;
-    color: #2c3e50;
-    margin-top: 8px;
+    margin-top: 4px;
     font-weight: normal;
     background: rgba(255,255,255,0.6);
     padding: 3px 6px;
@@ -212,9 +206,8 @@ body {
         border-radius: 40px;
     }
 
-    /* На мобильных все блоки идут вертикально, стекляшка сверху */
     .floorplan {
-        grid-template-columns: 1fr;  /* одна колонка */
+        grid-template-columns: 1fr;
         gap: 20px;
         padding: 15px;
     }
@@ -222,8 +215,8 @@ body {
     .glass-block,
     .left-block,
     .right-block {
-        grid-column: span 1;          /* каждый блок занимает одну колонку */
-        grid-row: auto;               /* порядок естественный: стекляшка, левый, правый */
+        grid-column: span 1;
+        grid-row: auto;
     }
 
     .block {
@@ -232,10 +225,11 @@ body {
 
     .seat {
         padding: 15px 3px;
-        width: 60px;
-        height: 80px;
+        min-height: 80px;
     }
-    .seats-grid {
-        grid-template-columns: repeat(2, minmax(60px, auto));
+
+    .seat-text {
+        font-size: 0.8rem;
+        margin-right: -5px;
     }
 }
