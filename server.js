@@ -243,6 +243,79 @@ app.post('/api/admin/clear-today', adminAuth, async (req, res) => {
   }
 });
 
+// --- Управление пользователями (админка) ---
+
+// Получить список всех пользователей с количеством бронирований
+app.get('/api/admin/users', adminAuth, async (req, res) => {
+  try {
+    const query = `
+      SELECT u.client_id, u.name, u.created_at,
+             COUNT(o.id) as bookings_count
+      FROM users u
+      LEFT JOIN occupancy o ON u.client_id = o.client_id
+      GROUP BY u.client_id
+      ORDER BY u.created_at DESC
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Переименовать пользователя
+app.put('/api/admin/users/:clientId', adminAuth, async (req, res) => {
+  const { clientId } = req.params;
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name required' });
+  try {
+    await pool.query('UPDATE users SET name = $1 WHERE client_id = $2', [name, clientId]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Объединить двух пользователей: source -> target
+app.post('/api/admin/users/merge', adminAuth, async (req, res) => {
+  const { sourceClientId, targetClientId } = req.body;
+  if (!sourceClientId || !targetClientId) {
+    return res.status(400).json({ error: 'Both source and target clientId required' });
+  }
+  if (sourceClientId === targetClientId) {
+    return res.status(400).json({ error: 'Cannot merge a user with itself' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Проверяем, существуют ли оба пользователя
+    const sourceExists = await client.query('SELECT 1 FROM users WHERE client_id = $1', [sourceClientId]);
+    const targetExists = await client.query('SELECT 1 FROM users WHERE client_id = $1', [targetClientId]);
+    if (sourceExists.rowCount === 0 || targetExists.rowCount === 0) {
+      throw new Error('One of the users does not exist');
+    }
+
+    // Обновляем все бронирования источника, перенаправляя на цель
+    await client.query(
+      'UPDATE occupancy SET client_id = $1 WHERE client_id = $2',
+      [targetClientId, sourceClientId]
+    );
+
+    // Удаляем исходного пользователя
+    await client.query('DELETE FROM users WHERE client_id = $1', [sourceClientId]);
+
+    await client.query('COMMIT');
+    res.json({ success: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 // ----- Планировщик сброса в полночь -----
 cron.schedule('0 0 * * *', async () => {
   console.log('Сброс занятости в полночь');

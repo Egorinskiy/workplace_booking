@@ -3,72 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админка | Бронирование мест</title>
+    <title>Админка | BookSpace</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Дополнительные стили для админки */
+        .admin-section {
+            margin-bottom: 2rem;
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        button {
+            margin: 0 4px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        .edit-btn { background-color: #ffc107; color: #000; }
+        .merge-btn { background-color: #17a2b8; color: #fff; }
+        .clear-btn { background-color: #dc3545; color: #fff; margin-top: 1rem; }
+        select, input[type="text"] {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .merge-panel {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .merge-panel div {
+            display: flex;
+            flex-direction: column;
+        }
+        .merge-panel label {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Панель администратора</h1>
-        <a href="/">Вернуться на главную</a>
-        <button id="clear-today">Освободить все места сегодня</button>
+    <header class="main-header">
+        <div class="logo">
+            <h1>📚 BookSpace — Администрирование</h1>
+        </div>
+        <div class="user-panel">
+            <a href="/" style="color:#2c3e50; text-decoration:none;">На главную</a>
+        </div>
     </header>
-    <main>
-        <h2>Занятые места на сегодня</h2>
-        <table id="occupancy-table">
-            <thead>
-                <tr>
-                    <th>ID записи</th>
-                    <th>Стол</th>
-                    <th>Сотрудник</th>
-                    <th>Время</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+
+    <main style="padding: 20px;">
+        <!-- Секция занятых мест (старая) -->
+        <div class="admin-section">
+            <h2>Занятые места сегодня</h2>
+            <table id="occupancy-table">
+                <thead>
+                    <tr><th>ID</th><th>Стол</th><th>Сотрудник</th><th>Дата</th><th></th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button id="clear-today" class="clear-btn">Освободить все места сегодня</button>
+        </div>
+
+        <!-- Новая секция: управление пользователями -->
+        <div class="admin-section">
+            <h2>Управление пользователями</h2>
+            <table id="users-table">
+                <thead>
+                    <tr><th>ID клиента</th><th>Имя</th><th>Дата регистрации</th><th>Бронирований</th><th>Действия</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div class="merge-panel">
+                <div>
+                    <label>Исходный пользователь (будет удалён)</label>
+                    <select id="source-user"></select>
+                </div>
+                <div>
+                    <label>Целевой пользователь (останется)</label>
+                    <select id="target-user"></select>
+                </div>
+                <button id="merge-users" class="merge-btn">Объединить</button>
+            </div>
+        </div>
     </main>
+
     <script>
-        let adminPollTimer;
-    async function loadOccupancy() {
-        try {
+        // Функция загрузки занятых мест (как и раньше)
+        async function loadOccupancy() {
             const response = await fetch('/api/admin/occupancy');
             const data = await response.json();
             const tbody = document.querySelector('#occupancy-table tbody');
             tbody.innerHTML = '';
             data.forEach(record => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${record.id}</td>
-                    <td>${record.label}</td>
-                    <td>${record.name}</td>
-                    <td>${new Date(record.date).toLocaleDateString()}</td>
-                    <td><button onclick="deleteRecord(${record.id})">Удалить</button></td>
-                `;
-                tbody.appendChild(row);
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = record.id;
+                row.insertCell(1).textContent = record.label;
+                row.insertCell(2).textContent = record.name;
+                row.insertCell(3).textContent = new Date(record.date).toLocaleDateString();
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Удалить';
+                delBtn.onclick = () => deleteRecord(record.id);
+                const cell = row.insertCell(4);
+                cell.appendChild(delBtn);
             });
-        } catch (err) {
-            console.error('Ошибка загрузки occupancy:', err);
         }
-    }
 
-    async function deleteRecord(id) {
-        if (!confirm('Удалить запись?')) return;
-        await fetch(`/api/admin/occupancy/${id}`, { method: 'DELETE' });
-        loadOccupancy(); // обновить после удаления
-    }
+        async function deleteRecord(id) {
+            if (!confirm('Удалить запись?')) return;
+            await fetch(`/api/admin/occupancy/${id}`, { method: 'DELETE' });
+            loadOccupancy();
+        }
 
-    document.getElementById('clear-today').addEventListener('click', async () => {
-        if (!confirm('Освободить все места сегодня?')) return;
-        await fetch('/api/admin/clear-today', { method: 'POST' });
+        document.getElementById('clear-today').addEventListener('click', async () => {
+            if (!confirm('Освободить все места сегодня?')) return;
+            await fetch('/api/admin/clear-today', { method: 'POST' });
+            loadOccupancy();
+        });
+
+        // --- Управление пользователями ---
+        let users = [];
+
+        async function loadUsers() {
+            const response = await fetch('/api/admin/users');
+            users = await response.json();
+            const tbody = document.querySelector('#users-table tbody');
+            const sourceSelect = document.getElementById('source-user');
+            const targetSelect = document.getElementById('target-user');
+            tbody.innerHTML = '';
+            sourceSelect.innerHTML = '';
+            targetSelect.innerHTML = '';
+
+            users.forEach(user => {
+                // Заполняем таблицу
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = user.client_id;
+                row.insertCell(1).textContent = user.name;
+                row.insertCell(2).textContent = new Date(user.created_at).toLocaleString();
+                row.insertCell(3).textContent = user.bookings_count || 0;
+
+                // Кнопка редактирования имени
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Изменить имя';
+                editBtn.className = 'edit-btn';
+                editBtn.onclick = () => editUserName(user.client_id, user.name);
+                const actionsCell = row.insertCell(4);
+                actionsCell.appendChild(editBtn);
+
+                // Опции для объединения (не включаем в выпадающий список самого себя)
+                if (user.client_id !== 'some-excluded') {
+                    const optionSrc = document.createElement('option');
+                    optionSrc.value = user.client_id;
+                    optionSrc.textContent = `${user.name} (${user.client_id.substring(0,8)}...)`;
+                    sourceSelect.appendChild(optionSrc);
+
+                    const optionTgt = document.createElement('option');
+                    optionTgt.value = user.client_id;
+                    optionTgt.textContent = `${user.name} (${user.client_id.substring(0,8)}...)`;
+                    targetSelect.appendChild(optionTgt);
+                }
+            });
+        }
+
+        async function editUserName(clientId, currentName) {
+            const newName = prompt('Введите новое имя', currentName);
+            if (!newName || newName === currentName) return;
+            const response = await fetch(`/api/admin/users/${clientId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName })
+            });
+            if (response.ok) {
+                alert('Имя изменено');
+                loadUsers();
+                loadOccupancy(); // обновляем таблицу бронирований, т.к. имена там тоже используются
+            } else {
+                alert('Ошибка при изменении имени');
+            }
+        }
+
+        document.getElementById('merge-users').addEventListener('click', async () => {
+            const source = document.getElementById('source-user').value;
+            const target = document.getElementById('target-user').value;
+            if (!source || !target) {
+                alert('Выберите обоих пользователей');
+                return;
+            }
+            if (source === target) {
+                alert('Нельзя объединить пользователя с самим собой');
+                return;
+            }
+            if (!confirm(`Объединить ${source} → ${target}? Все бронирования источника перейдут к цели, источник будет удалён.`)) return;
+
+            const response = await fetch('/api/admin/users/merge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sourceClientId: source, targetClientId: target })
+            });
+            if (response.ok) {
+                alert('Объединение выполнено');
+                loadUsers();
+                loadOccupancy();
+            } else {
+                const err = await response.json();
+                alert('Ошибка: ' + err.error);
+            }
+        });
+
+        // Первоначальная загрузка и периодическое обновление (опционально)
         loadOccupancy();
-    });
-
-    // Запускаем polling каждые 5 секунд для админки
-    adminPollTimer = setInterval(loadOccupancy, 5000);
-    window.addEventListener('beforeunload', () => clearInterval(adminPollTimer));
-
-    // Первая загрузка
-    loadOccupancy();
+        loadUsers();
+        setInterval(() => {
+            loadOccupancy();
+            loadUsers();
+        }, 10000);
     </script>
 </body>
 </html>
