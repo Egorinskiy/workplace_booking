@@ -7,10 +7,15 @@
     "vercel-build": "node scripts/migrate.js"
   },
   "dependencies": {
-    "socket.io": "^4.5.4",
     "express": "^4.18.2",
+    "socket.io": "^4.5.4",
     "pg": "^8.8.0",
+    "node-cron": "^3.0.2",
+    "dotenv": "^16.0.3",
     "basic-auth": "^2.0.1",
     "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }
