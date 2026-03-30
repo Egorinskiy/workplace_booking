@@ -7,6 +7,7 @@
     "vercel-build": "node scripts/migrate.js"
   },
   "dependencies": {
+    "socket.io": "^4.5.4",
     "express": "^4.18.2",
     "pg": "^8.8.0",
     "basic-auth": "^2.0.1",
