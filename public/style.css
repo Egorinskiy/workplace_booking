@@ -72,39 +72,22 @@ body {
     box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
-/* Планировка — Grid, стекляшка сверху */
+/* Планировка */
 .floorplan {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 30px;
     justify-content: center;
     padding: 30px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
-/* Стекляшка занимает всю ширину, первая строка */
-.glass-block {
-    grid-column: span 2;
-    grid-row: 1;
-}
-
-.left-block {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-.right-block {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-/* Оформление блоков */
 .block {
     background: white;
     padding: 20px;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    min-width: 280px;
+    flex: 1 1 300px;
     backdrop-filter: blur(5px);
 }
 
@@ -118,14 +101,12 @@ body {
     padding-bottom: 10px;
 }
 
-/* Сетка столов — 2 колонки */
 .seats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
 }
 
-/* Базовый стиль стола (прямоугольник) */
 .seat {
     background: #ecf0f1;
     border: 2px solid #bdc3c7;
@@ -138,11 +119,6 @@ body {
     color: #2c3e50;
     position: relative;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    /* Для позиционирования повёрнутого текста */
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    min-height: 100px;
 }
 
 .seat:hover:not(.occupied) {
@@ -159,28 +135,19 @@ body {
     opacity: 0.8;
 }
 
+/* Стиль для места, занятого текущим пользователем */
 .seat.my-seat {
     background: #d4edda;
     border-color: #28a745;
     border-width: 3px;
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-    cursor: pointer;
-}
-
-/* Контейнер для повёрнутого текста */
-.seat-text {
-    transform: rotate(-90deg);
-    transform-origin: top right;
-    white-space: nowrap;
-    text-align: left;
-    font-size: 0.9rem;
-    margin-right: -10px; /* смещение, чтобы текст был ближе к правому краю */
-    margin-top: 5px;
+    cursor: pointer; /* можно оставить, чтобы можно было освободить через кнопку, но клик по нему может быть запрещён логикой */
 }
 
 .seat .user-name {
     font-size: 0.75rem;
-    margin-top: 4px;
+    color: #2c3e50;
+    margin-top: 8px;
     font-weight: normal;
     background: rgba(255,255,255,0.6);
     padding: 3px 6px;
@@ -207,29 +174,15 @@ body {
     }
 
     .floorplan {
-        grid-template-columns: 1fr;
-        gap: 20px;
         padding: 15px;
-    }
-
-    .glass-block,
-    .left-block,
-    .right-block {
-        grid-column: span 1;
-        grid-row: auto;
+        gap: 20px;
     }
 
     .block {
-        min-width: auto;
+        min-width: 250px;
     }
 
     .seat {
         padding: 15px 3px;
-        min-height: 80px;
-    }
-
-    .seat-text {
-        font-size: 0.8rem;
-        margin-right: -5px;
     }
 }
