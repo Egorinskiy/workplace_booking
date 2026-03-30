@@ -72,22 +72,41 @@ body {
     box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
-/* Планировка */
+/* Планировка — теперь используем Grid */
 .floorplan {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* две колонки для левого и правого блоков */
     gap: 30px;
     justify-content: center;
     padding: 30px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
+/* Стекляшка занимает всю ширину и располагается первой */
+.glass-block {
+    grid-column: span 2;   /* занимает обе колонки */
+    grid-row: 1;           /* первая строка */
+}
+
+/* Левый блок — первая колонка, вторая строка */
+.left-block {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+/* Правый блок — вторая колонка, вторая строка */
+.right-block {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+/* Стили самих блоков */
 .block {
     background: white;
     padding: 20px;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    min-width: 280px;
-    flex: 1 1 300px;
     backdrop-filter: blur(5px);
 }
 
@@ -107,6 +126,12 @@ body {
     gap: 15px;
 }
 
+.seat-content {
+    transform: rotate(-90deg);
+    white-space: nowrap;
+    display: inline-block;
+}
+
 .seat {
     background: #ecf0f1;
     border: 2px solid #bdc3c7;
@@ -119,6 +144,10 @@ body {
     color: #2c3e50;
     position: relative;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .seat:hover:not(.occupied) {
@@ -141,7 +170,7 @@ body {
     border-color: #28a745;
     border-width: 3px;
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-    cursor: pointer; /* можно оставить, чтобы можно было освободить через кнопку, но клик по нему может быть запрещён логикой */
+    cursor: pointer;
 }
 
 .seat .user-name {
@@ -173,13 +202,22 @@ body {
         border-radius: 40px;
     }
 
+    /* На мобильных все блоки идут вертикально, стекляшка сверху */
     .floorplan {
-        padding: 15px;
+        grid-template-columns: 1fr;  /* одна колонка */
         gap: 20px;
+        padding: 15px;
+    }
+
+    .glass-block,
+    .left-block,
+    .right-block {
+        grid-column: span 1;          /* каждый блок занимает одну колонку */
+        grid-row: auto;               /* порядок естественный: стекляшка, левый, правый */
     }
 
     .block {
-        min-width: 250px;
+        min-width: auto;
     }
 
     .seat {

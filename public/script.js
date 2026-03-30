@@ -72,10 +72,20 @@ function renderSeats(seats) {
         }
 
         seatElement.dataset.id = seat.id;
-        seatElement.innerHTML = `
-            <div>${seat.label}</div>
-            ${seat.occupied ? `<div class="user-name">${seat.userName}</div>` : '<div class="user-name">Свободно</div>'}
-        `;
+
+//          Горизонтальный вариант
+//        seatElement.innerHTML = `
+//            <div>${seat.label}</div>
+//            ${seat.occupied ? `<div class="user-name">${seat.userName}</div>` : '<div class="user-name">Свободно</div>'}
+//        `;
+//          Вертикальный вариант
+          seatElement.innerHTML = `
+              <div class="seat-content">
+                    <div>${seat.label}</div>
+                    ${seat.occupied ? `<div class="user-name">${seat.userName}</div>` : '<div class="user-name">Свободно</div>'}
+              </div>
+            `;
+
 
         seatElement.addEventListener('click', () => onSeatClick(seat.id, seat.occupied));
         document.querySelector(`.seats-grid[data-block="${seat.block}"]`).appendChild(seatElement);

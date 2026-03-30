@@ -32,18 +32,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Конфигурация столов (можно вынести в БД при необходимости)
 const SEATS = [
   // Блок 1: столы 1-4
-  { id: 1, block: 'left', label: 'Стол 1' },
-  { id: 2, block: 'left', label: 'Стол 2' },
-  { id: 3, block: 'left', label: 'Стол 3' },
-  { id: 4, block: 'left', label: 'Стол 4' },
+  { id: 1, block: 'left', label: 'Эльвин Г./---' },
+  { id: 2, block: 'left', label: 'Владимир К./Дарья А.' },
+  { id: 3, block: 'left', label: 'Татьяна Х./---' },
+  { id: 4, block: 'left', label: 'Глеб Б./Наталья И.' },
   // Блок 2: столы 5-8
-  { id: 5, block: 'right', label: 'Стол 5' },
-  { id: 6, block: 'right', label: 'Стол 6' },
-  { id: 7, block: 'right', label: 'Стол 7' },
-  { id: 8, block: 'right', label: 'Стол 8' },
+  { id: 5, block: 'right', label: 'Розалия С./Дарья М.' },
+  { id: 6, block: 'right', label: 'Дарья З./Евгения С.' },
+  { id: 7, block: 'right', label: 'Егор В./Дмитрий П.' },
+  { id: 8, block: 'right', label: 'Владислав Ш./Яна Ж.' },
   // Кабинет-стекляшка: столы 9-10
-  { id: 9, block: 'glass', label: 'Кабинет 1' },
-  { id: 10, block: 'glass', label: 'Кабинет 2' }
+  { id: 9, block: 'glass', label: 'Нияз Ш.' },
+  { id: 10, block: 'glass', label: 'Надежда Е.' }
 ];
 
 // Вспомогательная функция: получить текущее состояние мест с именами
