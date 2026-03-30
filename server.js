@@ -7,6 +7,8 @@ const path = require('path');
 const auth = require('basic-auth');
 const cors = require('cors');
 
+require('dotenv').config();
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
