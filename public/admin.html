@@ -54,6 +54,32 @@
             font-size: 0.8rem;
             margin-bottom: 4px;
         }
+        .booking-panel {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .booking-panel div {
+            display: flex;
+            flex-direction: column;
+        }
+        .booking-panel label {
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+        .occupy-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .occupy-btn:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -101,9 +127,114 @@
                 <button id="merge-users" class="merge-btn">Объединить</button>
             </div>
         </div>
+
+        <!-- Новый блок: административное бронирование -->
+        <div class="admin-section">
+            <h2>Забронировать стол</h2>
+            <div class="booking-panel">
+                <div>
+                    <label>Стол:</label>
+                    <select id="admin-seat-select">
+                        <!-- заполняется JavaScript -->
+                    </select>
+                </div>
+                <div>
+                    <label>Пользователь:</label>
+                    <select id="admin-user-select">
+                        <option value="">-- Новый пользователь --</option>
+                        <!-- остальные опции заполняются из списка users -->
+                    </select>
+                </div>
+                <div>
+                    <label>Имя (если новый пользователь):</label>
+                    <input type="text" id="admin-new-user-name" placeholder="Введите имя">
+                </div>
+                <button id="admin-occupy-btn" class="occupy-btn">Забронировать</button>
+            </div>
+        </div>
     </main>
 
     <script>
+        // --- Блок администрирования бронирования ---
+        let seatsList = [];
+
+        async function loadSeatsForAdmin() {
+            const response = await fetch('/api/seats');
+            seatsList = await response.json();
+            const select = document.getElementById('admin-seat-select');
+            select.innerHTML = '';
+            seatsList.forEach(seat => {
+                const option = document.createElement('option');
+                option.value = seat.id;
+                option.textContent = `${seat.label} (${seat.occupied ? 'занят' : 'свободен'})`;
+                select.appendChild(option);
+            });
+        }
+
+        async function fillUserSelect() {
+            const response = await fetch('/api/admin/users');
+            const users = await response.json();
+            const select = document.getElementById('admin-user-select');
+            // Сохраняем первый пункт "-- Новый пользователь --"
+            const firstOption = select.options[0];
+            select.innerHTML = '';
+            select.appendChild(firstOption);
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.client_id;
+                option.textContent = `${user.name} (${user.client_id.substring(0,8)}...)`;
+                select.appendChild(option);
+            });
+        }
+
+        document.getElementById('admin-occupy-btn').addEventListener('click', async () => {
+            const seatId = document.getElementById('admin-seat-select').value;
+            const selectedUserId = document.getElementById('admin-user-select').value;
+            const newUserName = document.getElementById('admin-new-user-name').value.trim();
+
+            if (!seatId) {
+                alert('Выберите стол');
+                return;
+            }
+
+            let body = { seatId: parseInt(seatId) };
+            if (selectedUserId) {
+                body.clientId = selectedUserId;
+            } else {
+                if (!newUserName) {
+                    alert('Введите имя нового пользователя');
+                    return;
+                }
+                body.name = newUserName;
+            }
+
+            try {
+                const response = await fetch('/api/admin/occupy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert('Ошибка: ' + (err.error || 'Не удалось забронировать'));
+                } else {
+                    alert('Стол успешно забронирован');
+                    // Обновляем таблицы и списки
+                    loadOccupancy();
+                    loadUsers();
+                    loadSeatsForAdmin();
+                    fillUserSelect(); // обновляем список пользователей (возможно, появился новый)
+                }
+            } catch (err) {
+                alert('Ошибка соединения');
+            }
+        });
+
+        // При загрузке страницы вызываем все нужные функции
+        loadSeatsForAdmin();
+        fillUserSelect();
+        // Остальные функции (loadOccupancy, loadUsers) уже вызываются ранее.
+
         // Функция загрузки занятых мест (как и раньше)
         async function loadOccupancy() {
             const response = await fetch('/api/admin/occupancy');

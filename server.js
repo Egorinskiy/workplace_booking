@@ -335,3 +335,68 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
+// Административное бронирование стола за любым пользователем
+app.post('/api/admin/occupy', adminAuth, async (req, res) => {
+  const { seatId, clientId, name } = req.body;
+  if (!seatId) return res.status(400).json({ error: 'seatId required' });
+
+  const seat = SEATS.find(s => s.id === seatId);
+  if (!seat) return res.status(400).json({ error: 'Invalid seatId' });
+
+  let targetClientId = clientId;
+  let userName = name;
+
+  // Если передан clientId — проверим, существует ли такой пользователь
+  if (targetClientId) {
+    const userExists = await pool.query('SELECT name FROM users WHERE client_id = $1', [targetClientId]);
+    if (userExists.rowCount === 0) {
+      return res.status(400).json({ error: 'User with this clientId does not exist' });
+    }
+    userName = userExists.rows[0].name;
+  } else {
+    // Создаём нового пользователя с указанным именем
+    if (!userName) return res.status(400).json({ error: 'Name required for new user' });
+    // Генерируем новый clientId (можно использовать UUID или просто уникальный)
+    const newClientId = crypto.randomUUID ? crypto.randomUUID() : 'admin-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    await pool.query(
+      'INSERT INTO users (client_id, name) VALUES ($1, $2) ON CONFLICT (client_id) DO UPDATE SET name = EXCLUDED.name',
+      [newClientId, userName]
+    );
+    targetClientId = newClientId;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Освобождаем предыдущее место этого пользователя сегодня (если есть)
+    await client.query(
+      'DELETE FROM occupancy WHERE client_id = $1 AND date = CURRENT_DATE',
+      [targetClientId]
+    );
+
+    // Занимаем новый стол
+    await client.query(
+      'INSERT INTO occupancy (seat_id, client_id, date) VALUES ($1, $2, CURRENT_DATE)',
+      [seatId, targetClientId]
+    );
+
+    await client.query('COMMIT');
+
+    // Рассылаем обновление всем клиентам
+    const seats = await getCurrentSeats();
+    io.emit('seats-updated', seats);
+    res.json({ success: true, seats });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Admin occupy error:', err);
+    if (err.code === '23505') {
+      res.status(409).json({ error: 'Seat already occupied' });
+    } else {
+      res.status(500).json({ error: err.message });
+    }
+  } finally {
+    client.release();
+  }
+});
