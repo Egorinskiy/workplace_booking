@@ -317,8 +317,8 @@ app.post('/api/admin/users/merge', adminAuth, async (req, res) => {
 });
 
 // ----- Планировщик сброса в полночь -----
-cron.schedule('0 0 * * *', async () => {
-  console.log('Сброс занятости в полночь');
+cron.schedule('0 18 * * *', async () => {
+  console.log('Сброс занятости в 18:00');
   try {
     await pool.query('DELETE FROM occupancy WHERE date = CURRENT_DATE');
     const seats = await getCurrentSeats();
